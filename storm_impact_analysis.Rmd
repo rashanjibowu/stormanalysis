@@ -204,14 +204,22 @@ Calculate and merge average and total event counts
 ```{r event counts}
 
 eventCountsByYear <- data.table(count(stormData, c("EventCategory", "year")))
+totalCountsByEventCategory <- eventCountsByYear[, list(totalEventCount = sum(freq)), 
+                                                by = c("EventCategory")]
 
-totalCountsByEventCategory <- eventCountsByYear[, list(totalEventCount = sum(freq)), by = c("EventCategory")]
+avgCountsByEventCategory <- eventCountsByYear[, list(avgAnnualEventCount = mean(freq)), 
+                                              by = c("EventCategory")]
 
-avgCountsByEventCategory <- eventCountsByYear[, list(avgAnnualEventCount = mean(freq)), by = c("EventCategory")]
+# merge
+stormDataByEventCategory <- merge(x = stormDataByEventCategory, 
+                                  y = avgCountsByEventCategory, 
+                                  by = c("EventCategory"), 
+                                  all = FALSE)
 
-stormDataByEventCategory <- merge(x = stormDataByEventCategory, y = avgCountsByEventCategory, by = c("EventCategory"), all = FALSE)
-
-stormDataByEventCategory <- merge(x = stormDataByEventCategory, y = totalCountsByEventCategory, by = c("EventCategory"), all = FALSE)
+stormDataByEventCategory <- merge(x = stormDataByEventCategory, 
+                                  y = totalCountsByEventCategory, 
+                                  by = c("EventCategory"), 
+                                  all = FALSE)
 
 ```
 
@@ -219,14 +227,15 @@ Calculate average measure per event in each event category
 
 ```{r average measure per event in event category}
 
-stormDataByEventCategory <- stormDataByEventCategory[,avgFatalitiesPerEvent:=       totalFatalities / totalEventCount]
-stormDataByEventCategory <- stormDataByEventCategory[,avgInjuriesPerEvent:=         totalInjuries / totalEventCount]
-stormDataByEventCategory <- stormDataByEventCategory[,avgCropDamagePerEvent:=       totalCropDamage / totalEventCount]
-stormDataByEventCategory <- stormDataByEventCategory[,avgPropertyDamagePerEvent:=   totalPropertyDamage / totalEventCount]
+stormDataByEventCategory <- stormDataByEventCategory[,avgFatalitiesPerEvent:= totalFatalities / totalEventCount]
+stormDataByEventCategory <- stormDataByEventCategory[,avgInjuriesPerEvent:= totalInjuries / totalEventCount]
+stormDataByEventCategory <- stormDataByEventCategory[,avgCropDamagePerEvent:= totalCropDamage / totalEventCount]
+stormDataByEventCategory <- stormDataByEventCategory[,avgPropertyDamagePerEvent:= totalPropertyDamage / totalEventCount]
 
 ```
 
-Estimates of next 12 months = Avg Measure Per Event * Avg Annual Event Count
+Calculate estimates of each measure for the next 12 months
+Estimated NTM Measure = Avg Measure Per Event (x) Avg Annual Event Count
 
 ```{r estimates of ntm}
 
@@ -277,7 +286,7 @@ g + geom_bar(color="gray", fill="#003366", stat="identity") +
 
 ```
 
-#### Preparedness Analysis
+#### Results of Analysis from Municipal Manager's Perspective
 
 From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. The product of these produce metrics for estimated human harm and estimated economic damage over the next 12 months.
 
