@@ -1,0 +1,8 @@
+# cached files
+storm_impact_analysis_cache
+
+# data directory - will be automatically constructed in the scripts
+data/
+
+# system files
+.Rhistory
