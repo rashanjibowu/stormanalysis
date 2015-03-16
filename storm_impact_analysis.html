@@ -55,13 +55,6 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<p>Set global parameters</p>
-<pre class="r"><code>library(knitr)
-library(data.table)
-library(ggplot2)
-library(plyr)
-library(scales)
-opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)</code></pre>
 <div id="synopsis" class="section level3">
 <h3>Synopsis</h3>
 <p>The purpose of this anaylsis is to determine which types of events are most harmful with respect to population health and which events have the greatest economic consequences. To answer these questions, we accessed and analyzed storm data from the National Oceanic and Atmospheric Administration. This document shows our analysis step-by-step so that you may reproduce it in its entirety.</p>
@@ -77,6 +70,13 @@ opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)</code></pre>
 </div>
 <div id="data-processing" class="section level3">
 <h3>Data Processing</h3>
+<p>Set global parameters and identify the R packages that were used in this analysis</p>
+<pre class="r"><code>library(knitr)
+library(data.table)
+library(ggplot2)
+library(plyr)
+library(scales)
+opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)</code></pre>
 <p>Download the data</p>
 <pre class="r"><code># data can be downloaded from this url
 url &lt;- c(&quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot;)
@@ -90,10 +90,10 @@ if (!file.exists(destFile.path)) {
 }</code></pre>
 <p>Load data into memory</p>
 <pre class="r"><code>stormData &lt;- read.table(&quot;./data/stormdata.csv.bz2&quot;, sep = &quot;,&quot;, header = TRUE)</code></pre>
-<p>For easier processing, remove unnecessary columns and format data into a data.table</p>
+<p>For easier processing, drop unused columns and format data into a data table</p>
 <pre class="r"><code>stormData &lt;- stormData[,c(&quot;BGN_DATE&quot;, &quot;EVTYPE&quot;, &quot;FATALITIES&quot;, &quot;INJURIES&quot;, &quot;PROPDMG&quot;, &quot;CROPDMG&quot;)]
 stormData &lt;- data.table(stormData)</code></pre>
-<p>Using the BGN_DATE variable, calculate the year of the event.</p>
+<p>Using the <code>BGN_DATE</code> variable, calculate the year of the event.</p>
 <pre class="r"><code>stormData &lt;- stormData[, date:= as.Date(stormData$BGN_DATE, &quot;%m/%d/%Y %H:%M:%S&quot;)]
 stormData &lt;- stormData[, year:= year(date)]</code></pre>
 <p>Create a new column for cleaned versions of event categories and group similar events together. Focus on the events with meaningful injury, fatality, and damage values.</p>
@@ -182,7 +182,7 @@ stormData$EventCategory[indicies] &lt;- c(&quot;excessive heat&quot;)
 
 indicies &lt;- grep(&quot;urban|((sml|small) stream)&quot;, stormData$EventCategory)
 stormData$EventCategory[indicies] &lt;- c(&quot;urban flood&quot;)</code></pre>
-<p>To answer the two main questions, calculate the overall sums of each measure for each event category</p>
+<p>To answer the two main questions, calculate the overall sums of each measure for each event category. While the data extend as far back as 1950, much more data is available in recent years (since 1995). As a result, the sums predominantly reflect the time period since then.</p>
 <pre class="r"><code>stormDataByEventCategory &lt;- stormData[, 
     list(totalFatalities      = sum(FATALITIES, na.rm = TRUE),
          totalInjuries        = sum(INJURIES, na.rm = TRUE),
@@ -192,7 +192,7 @@ stormData$EventCategory[indicies] &lt;- c(&quot;urban flood&quot;)</code></pre>
 
 stormDataByEventCategory &lt;- stormDataByEventCategory[, totalHumanHarm:= totalFatalities + totalInjuries]
 stormDataByEventCategory &lt;- stormDataByEventCategory[, totalEconomicDamage:= totalCropDamage + totalPropertyDamage]</code></pre>
-<p>To answer the alternative question from the perspective of the municipal manager, we need a bit more information:</p>
+<p>To answer the forward-looking question from the perspective of the municipal manager, we need a bit more information:</p>
 <ol style="list-style-type: decimal">
 <li>Total overall number of fatalities for each event type <em>(included from above)</em></li>
 <li>Total overall number of injuries for each event type <em>(included from above)</em></li>
@@ -205,9 +205,9 @@ stormDataByEventCategory &lt;- stormDataByEventCategory[, totalEconomicDamage:= 
 <li>Average crop damage per event in event type<br /></li>
 <li>Average property damager per event in event type<br /></li>
 <li>Estimated 12 month fatality for each event type <em>(avg # of events x avg fatalities per event)</em><br /></li>
-<li>Estimated 12 month injury count for each event type <em>(avg # of events x avg fatalities per event)</em><br /></li>
-<li>Estimated 12 month crop damage for each event type <em>(avg # of events x avg fatalities per event)</em><br /></li>
-<li>Estimated 12 month property damage for each event type <em>(avg # of events x avg fatalities per event)</em></li>
+<li>Estimated 12 month injury count for each event type <em>(avg # of events x avg injuries per event)</em><br /></li>
+<li>Estimated 12 month crop damage for each event type <em>(avg # of events x avg crop damage per event)</em><br /></li>
+<li>Estimated 12 month property damage for each event type <em>(avg # of events x avg property damage per event)</em></li>
 </ol>
 <p>Calculate and merge average and total event counts</p>
 <pre class="r"><code>eventCountsByYear &lt;- data.table(count(stormData, c(&quot;EventCategory&quot;, &quot;year&quot;)))
@@ -267,7 +267,7 @@ g + geom_bar(color=&quot;gray&quot;, fill=&quot;#003366&quot;, stat=&quot;identi
 <div id="preparedness-analysis" class="section level4">
 <h4>Preparedness Analysis</h4>
 <p>From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. The product of these produce metrics for estimated human harm and estimated economic damage over the next 12 months.</p>
-<p>These results show that tornados, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.</p>
+<p>These results show that tornadoes, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.</p>
 <pre class="r"><code># Focus on the the most impactful event categories
 plotData &lt;- stormDataByEventCategory[NTMEstHumanHarm &gt;= 80 | NTMEstEconomicDamage &gt;= 10000, ]
 

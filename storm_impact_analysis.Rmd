@@ -5,17 +5,6 @@ output:
     keep_md: yes
 ---
 
-Set global parameters
-
-``` {r setup}
-library(knitr)
-library(data.table)
-library(ggplot2)
-library(plyr)
-library(scales)
-opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)
-```
-
 ### Synopsis
 
 The purpose of this anaylsis is to determine which types of events are most harmful with respect to population health and which events have the greatest economic consequences. To answer these questions, we accessed and analyzed storm data from the National Oceanic and Atmospheric Administration. This document shows our analysis step-by-step so that you may reproduce it in its entirety.
@@ -31,6 +20,17 @@ Similarly, to answer the question, "Which events have the greatest economic cons
 From the perspective of the municipal manager seeking to allocate resources to minimize the impact of storms and emergencies, perhaps these data can be used to answer the question, "What is the priority list of events that we should be prepared for in the U.S. today?" Instead of summarizing which events have had the greatest impact, the analysis could propose a list of event types to prepare for based on both expected occurrences of that event type and expected impact for each occurrence in the next 12 months. The guiding philosophy behind this approach is that, event types that have the largest expected consequences should be prioritized over those that are expected to be less impactful.
 
 ### Data Processing
+
+Set global parameters and identify the R packages that were used in this analysis
+
+``` {r setup}
+library(knitr)
+library(data.table)
+library(ggplot2)
+library(plyr)
+library(scales)
+opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)
+```
 
 Download the data
 
@@ -56,7 +56,7 @@ stormData <- read.table("./data/stormdata.csv.bz2", sep = ",", header = TRUE)
 
 ```
 
-For easier processing, remove unnecessary columns and format data into a data.table
+For easier processing, drop unused columns and format data into a data table
 
 ```{r use data table}
 
@@ -65,7 +65,7 @@ stormData <- data.table(stormData)
 
 ```
 
-Using the BGN_DATE variable, calculate the year of the event. 
+Using the `BGN_DATE` variable, calculate the year of the event. 
 
 ```{r date formatting}
 
@@ -166,7 +166,7 @@ stormData$EventCategory[indicies] <- c("urban flood")
 
 ```
 
-To answer the two main questions, calculate the overall sums of each measure for each event category
+To answer the two main questions, calculate the overall sums of each measure for each event category. While the data extend as far back as 1950, much more data is available in recent years (since 1995). As a result, the sums predominantly reflect the time period since then.
 
 ```{r sums of each measure}
 
@@ -182,7 +182,7 @@ stormDataByEventCategory <- stormDataByEventCategory[, totalEconomicDamage:= tot
 
 ```
 
-To answer the alternative question from the perspective of the municipal manager, we need a bit more information:
+To answer the forward-looking question from the perspective of the municipal manager, we need a bit more information:
 
 1. Total overall number of fatalities for each event type _(included from above)_ 
 2. Total overall number of injuries for each event type _(included from above)_ 
@@ -195,9 +195,9 @@ To answer the alternative question from the perspective of the municipal manager
 9. Average crop damage per event in event type  
 10. Average property damager per event in event type  
 11. Estimated 12 month fatality for each event type _(avg # of events x avg fatalities per event)_  
-12. Estimated 12 month injury count for each event type _(avg # of events x avg fatalities per event)_  
-13. Estimated 12 month crop damage for each event type _(avg # of events x avg fatalities per event)_  
-14. Estimated 12 month property damage for each event type _(avg # of events x avg fatalities per event)_
+12. Estimated 12 month injury count for each event type _(avg # of events x avg injuries per event)_  
+13. Estimated 12 month crop damage for each event type _(avg # of events x avg crop damage per event)_  
+14. Estimated 12 month property damage for each event type _(avg # of events x avg property damage per event)_
 
 Calculate and merge average and total event counts
 
@@ -281,7 +281,7 @@ g + geom_bar(color="gray", fill="#003366", stat="identity") +
 
 From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. The product of these produce metrics for estimated human harm and estimated economic damage over the next 12 months.
 
-These results show that tornados, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.
+These results show that tornadoes, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.
 
 ```{r plot-ntm analysis}
 
