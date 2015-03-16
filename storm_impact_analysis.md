@@ -8,6 +8,7 @@ library(knitr)
 library(data.table)
 library(ggplot2)
 library(plyr)
+library(scales)
 opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)
 ```
 
@@ -21,7 +22,7 @@ To answer the question, "Which events are most harmful to population health?", w
 
 Similarly, to answer the question, "Which events have the greatest economic consequences?", we can simply sum the crop damage and property damage by the type of event and sort in decreasing order of total damage value. 
 
-### An Alternative Approach
+#### An Alternative Approach
 
 From the perspective of the municipal manager seeking to allocate resources to minimize the impact of storms and emergencies, perhaps these data can be used to answer the question, "What is the priority list of events that we should be prepared for in the U.S. today?" Instead of summarizing which events have had the greatest impact, the analysis could propose a list of event types to prepare for based on both expected occurrences of that event type and expected impact for each occurrence in the next 12 months. The guiding philosophy behind this approach is that, event types that have the largest expected consequences should be prioritized over those that are expected to be less impactful.
 
@@ -172,7 +173,8 @@ stormDataByEventCategory <- stormDataByEventCategory[, totalHumanHarm:= totalFat
 stormDataByEventCategory <- stormDataByEventCategory[, totalEconomicDamage:= totalCropDamage + totalPropertyDamage]
 ```
 
-To answer the alternative question from the perspective of the municipal manager, we need a bit more information: 
+To answer the alternative question from the perspective of the municipal manager, we need a bit more information:
+
 1. Total overall number of fatalities for each event type _(included from above)_ 
 2. Total overall number of injuries for each event type _(included from above)_ 
 3. Total overall crop damage for each event type _(included from above)_ 
@@ -228,7 +230,9 @@ stormDataByEventCategory <- stormDataByEventCategory[,NTMEstEconomicDamage:= NTM
 
 ### Results
 
-####Human Harm
+#### Human Harm
+
+The results below show that tornadoes, excessive heat, floods, lightning, and wind from thunderstorms cause the greatest harm to population health. These events each appear at the top of the lists of the most deadly and most injurious types of events.
 
 
 ```r
@@ -245,9 +249,9 @@ g + geom_bar(color="black", fill="#006699", stat="identity") +
 
 <img src="storm_impact_analysis_files/figure-html/plot-population harm-1.png" title="" alt="" style="display: block; margin: auto;" />
 
-From the analysis above, it is clear that tornadoes, excessive heat, floods, lightning, and wind from thunderstorms cause the greatest harm to population health. These events each appear at the top of the lists of the most deadly and most injurious types of events.
-
 #### Economic Damage
+
+The results below show that tornadoes, hail, floods, and wind from thunderstorms cause the greatest amount of economic damage, with each appearing at the top of the lists of the type of events that cause the most property and crop damage.
 
 
 ```r
@@ -259,86 +263,27 @@ g <- ggplot(plotData, aes(EventCategory, totalEconomicDamage))
 g + geom_bar(color="gray", fill="#003366", stat="identity") + 
     labs(x = "Type of Event", y = "Total Value of Property and Crop Damage", title = "Economic Damage") +
     coord_flip() +
-    scale_x_discrete(limits = rev(plotData$EventCategory), labels = rev(plotData$EventCategory))
+    scale_x_discrete(limits = rev(plotData$EventCategory), labels = rev(plotData$EventCategory)) +
+    scale_y_continuous(labels = comma)
 ```
 
 <img src="storm_impact_analysis_files/figure-html/plot-economic damage-1.png" title="" alt="" style="display: block; margin: auto;" />
 
-Similarly, tornadoes, hail, floods, and wind from thunderstorms cause tge greatest amount of economic damage, with each appearing at the top of the lists of the type of events that cause the most property and crop damage.
+#### Preparedness Analysis
 
-#### NTM Results
+From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. The product of these produce metrics for estimated human harm and estimated economic damage over the next 12 months.
 
-Expected impact is the product of the 
-
-The approach utlized in this analysis balances both alternatives by focusing attention on the next 12 months. The analysis creates a prioritization list for the next year based on the averge number of events likely to occur and the average impact of those events. To measure likelihood of occurring, we calculate the average number of events of that type per year. The estimated We can aslo estimate the average impact of those event. 
-
-NTM Estimates
+These results show that tornados, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.
 
 
 ```r
-# find intersection about 80 HH and above 10000 in ED
-plotData <- stormDataByEventCategory[NTMEstHumanHarm >= 80 | NTMEstEconomicDamage >= 20000, ]
+# Focus on the the most impactful event categories
+plotData <- stormDataByEventCategory[NTMEstHumanHarm >= 80 | NTMEstEconomicDamage >= 10000, ]
 
 # plot the graph
 g <- ggplot(plotData, aes(NTMEstHumanHarm, NTMEstEconomicDamage))
 g + geom_point(size = 4, alpha = 0.6, aes(color = EventCategory)) + 
-    labs(x = "Estimated Human Harm", y = "Estimated Economic Damage", title = "Preparation Focus (NTM)")
+    labs(x = "Estimated Human Harm", y = "Estimated Economic Damage", title = "Most Impactful Event Categories To Prepare For")
 ```
 
 <img src="storm_impact_analysis_files/figure-html/plot-ntm analysis-1.png" title="" alt="" style="display: block; margin: auto;" />
-
-```r
-head(stormDataByEventCategory[order(NTMEstHumanHarm, decreasing = TRUE),list(EventCategory, NTMEstHumanHarm)], 20)
-```
-
-```
-##      EventCategory NTMEstHumanHarm
-##  1:        tornado      1564.46774
-##  2: excessive heat       650.84211
-##  3:          flood       382.57895
-##  4:      lightning       318.31579
-##  5:   thunderstorm       180.71930
-##  6:    flash flood       149.31579
-##  7:   winter storm       118.26316
-##  8:      ice storm       108.63158
-##  9:      high wind        92.84211
-## 10:      wild fire        89.26316
-## 11:      hurricane        81.27778
-## 12:            fog        79.60000
-## 13:    rip current        61.44444
-## 14:     heavy snow        61.15789
-## 15:       blizzard        47.68421
-## 16:        tsunami        40.50000
-## 17:     wind chill        35.31579
-## 18:          glaze        31.85714
-## 19:            ice        28.60000
-## 20:     dust storm        24.31579
-```
-
-```r
-head(stormDataByEventCategory[order(NTMEstEconomicDamage, decreasing = TRUE),list(EventCategory, NTMEstEconomicDamage)], 20)
-```
-
-```
-##      EventCategory NTMEstEconomicDamage
-##  1:    flash flood            87413.585
-##  2:          flood            56762.161
-##  3:        tornado            53460.630
-##  4:   thunderstorm            50481.366
-##  5:      lightning            31946.178
-##  6:           hail            22303.514
-##  7:      high wind            21203.472
-##  8:   winter storm             8036.867
-##  9:      wild fire             7090.475
-## 10:     heavy snow             6744.679
-## 11:    urban flood             4464.267
-## 12:      ice storm             3562.612
-## 13:     heavy rain             3510.421
-## 14:    strong wind             3487.975
-## 15:    river flood             3469.140
-## 16: tropical storm             3007.147
-## 17:        typhoon             2254.400
-## 18: excessive heat             2247.564
-## 19: excessive snow             1935.000
-## 20:      hurricane             1920.558
-```

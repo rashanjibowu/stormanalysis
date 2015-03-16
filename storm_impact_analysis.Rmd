@@ -12,6 +12,7 @@ library(knitr)
 library(data.table)
 library(ggplot2)
 library(plyr)
+library(scales)
 opts_chunk$set(cache = FALSE, fig.align = 'center', echo = TRUE)
 ```
 
@@ -181,7 +182,8 @@ stormDataByEventCategory <- stormDataByEventCategory[, totalEconomicDamage:= tot
 
 ```
 
-To answer the alternative question from the perspective of the municipal manager, we need a bit more information: 
+To answer the alternative question from the perspective of the municipal manager, we need a bit more information:
+
 1. Total overall number of fatalities for each event type _(included from above)_ 
 2. Total overall number of injuries for each event type _(included from above)_ 
 3. Total overall crop damage for each event type _(included from above)_ 
@@ -239,7 +241,9 @@ stormDataByEventCategory <- stormDataByEventCategory[,NTMEstEconomicDamage:= NTM
 
 ### Results
 
-####Human Harm
+#### Human Harm
+
+The results below show that tornadoes, excessive heat, floods, lightning, and wind from thunderstorms cause the greatest harm to population health. These events each appear at the top of the lists of the most deadly and most injurious types of events.
 
 ```{r plot-population harm}
 
@@ -254,9 +258,9 @@ g + geom_bar(color="black", fill="#006699", stat="identity") +
     scale_x_discrete(limits = rev(plotData$EventCategory), labels = rev(plotData$EventCategory))
 ```
 
-From the analysis above, it is clear that tornadoes, excessive heat, floods, lightning, and wind from thunderstorms cause the greatest harm to population health. These events each appear at the top of the lists of the most deadly and most injurious types of events.
-
 #### Economic Damage
+
+The results below show that tornadoes, hail, floods, and wind from thunderstorms cause the greatest amount of economic damage, with each appearing at the top of the lists of the type of events that cause the most property and crop damage.
 
 ```{r plot-economic damage}
 
@@ -268,32 +272,25 @@ g <- ggplot(plotData, aes(EventCategory, totalEconomicDamage))
 g + geom_bar(color="gray", fill="#003366", stat="identity") + 
     labs(x = "Type of Event", y = "Total Value of Property and Crop Damage", title = "Economic Damage") +
     coord_flip() +
-    scale_x_discrete(limits = rev(plotData$EventCategory), labels = rev(plotData$EventCategory))
+    scale_x_discrete(limits = rev(plotData$EventCategory), labels = rev(plotData$EventCategory)) +
+    scale_y_continuous(labels = comma)
+
 ```
 
-Similarly, tornadoes, hail, floods, and wind from thunderstorms cause tge greatest amount of economic damage, with each appearing at the top of the lists of the type of events that cause the most property and crop damage.
+#### Preparedness Analysis
 
-#### NTM Results
+From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. The product of these produce metrics for estimated human harm and estimated economic damage over the next 12 months.
 
-Expected impact is the product of the 
-
-The approach utlized in this analysis balances both alternatives by focusing attention on the next 12 months. The analysis creates a prioritization list for the next year based on the averge number of events likely to occur and the average impact of those events. To measure likelihood of occurring, we calculate the average number of events of that type per year. The estimated We can aslo estimate the average impact of those event. 
-
-NTM Estimates
+These results show that tornados, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.
 
 ```{r plot-ntm analysis}
 
-# find intersection about 80 HH and above 10000 in ED
+# Focus on the the most impactful event categories
 plotData <- stormDataByEventCategory[NTMEstHumanHarm >= 80 | NTMEstEconomicDamage >= 10000, ]
 
 # plot the graph
 g <- ggplot(plotData, aes(NTMEstHumanHarm, NTMEstEconomicDamage))
 g + geom_point(size = 4, alpha = 0.6, aes(color = EventCategory)) + 
-    labs(x = "Estimated Human Harm", y = "Estimated Economic Damage", title = "Preparation Focus (NTM)")
-
-```
-```{r}
-head(stormDataByEventCategory[order(NTMEstHumanHarm, decreasing = TRUE),list(EventCategory, NTMEstHumanHarm)], 20)
-head(stormDataByEventCategory[order(NTMEstEconomicDamage, decreasing = TRUE),list(EventCategory, NTMEstEconomicDamage)], 20)
+    labs(x = "Estimated Human Harm", y = "Estimated Economic Damage", title = "Most Impactful Event Categories To Prepare For")
 
 ```
