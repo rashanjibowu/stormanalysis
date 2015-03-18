@@ -7,13 +7,13 @@ output:
 
 ### Synopsis
 
-The purpose of this anaylsis is to determine which types of events are most harmful with respect to population health and which events have the greatest economic consequences. To answer these questions, we accessed and analyzed storm data from the National Oceanic and Atmospheric Administration. This document shows our analysis step-by-step so that you may reproduce it in its entirety.
+The purpose of this anaylsis is to determine which types of storms and weather events are most harmful with respect to population health and which have the greatest economic consequences. Analyzing storm data from the National Oceanic and Atmospheric Administration can help answer these questions. This document details step-by-step analysis so that the reader may reproduce it in its entirety.
 
 ### Analytical Approach
 
-To answer the question, "Which events are most harmful to population health?", we can simply sum up the fatalities and injuries by type of event and sort in decreasing order of the number of fatalities and injuries. 
+To answer the question, "Which events are most harmful to population health?", the analysis below simply sums up the fatalities and injuries by type of event and sort in decreasing order of the number of fatalities and injuries. 
 
-Similarly, to answer the question, "Which events have the greatest economic consequences?", we can simply sum the crop damage and property damage by the type of event and sort in decreasing order of total damage value. 
+Similarly, to answer the question, "Which events have the greatest economic consequences?", the analysis below simply sums the crop damage and property damage by the type of event and sort in decreasing order of total damage value. 
 
 #### An Alternative Approach
 
@@ -56,7 +56,7 @@ stormData <- read.table("./data/stormdata.csv.bz2", sep = ",", header = TRUE)
 
 ```
 
-For easier processing, drop unused columns and format data into a data table
+For faster and easier processing, drop unused columns and format data into a data table
 
 ```{r use data table}
 
@@ -194,10 +194,10 @@ To answer the forward-looking question from the perspective of the municipal man
 8. Average injuries per event in event type  
 9. Average crop damage per event in event type  
 10. Average property damager per event in event type  
-11. Estimated 12 month fatality for each event type _(avg # of events x avg fatalities per event)_  
-12. Estimated 12 month injury count for each event type _(avg # of events x avg injuries per event)_  
-13. Estimated 12 month crop damage for each event type _(avg # of events x avg crop damage per event)_  
-14. Estimated 12 month property damage for each event type _(avg # of events x avg property damage per event)_
+11. Estimated 12 month fatality for each event type _(annual avg # of events x avg fatalities per event)_  
+12. Estimated 12 month injury count for each event type _(annual avg # of events x avg injuries per event)_  
+13. Estimated 12 month crop damage for each event type _(annual avg # of events x avg crop damage per event)_  
+14. Estimated 12 month property damage for each event type _(annual avg # of events x avg property damage per event)_
 
 Calculate and merge average and total event counts
 
@@ -252,7 +252,7 @@ stormDataByEventCategory <- stormDataByEventCategory[,NTMEstEconomicDamage:= NTM
 
 #### Human Harm
 
-The results below show that tornadoes, excessive heat, floods, lightning, and wind from thunderstorms cause the greatest harm to population health. These events each appear at the top of the lists of the most deadly and most injurious types of events.
+The results below show that `tornadoes`, `excessive heat`, `floods`, `lightning`, and `wind from thunderstorms` cause the greatest harm to population health. These events each appear at the top of the lists of the most deadly and most injurious types of events.
 
 ```{r plot-population harm}
 
@@ -269,7 +269,7 @@ g + geom_bar(color="black", fill="#006699", stat="identity") +
 
 #### Economic Damage
 
-The results below show that tornadoes, hail, floods, and wind from thunderstorms cause the greatest amount of economic damage, with each appearing at the top of the lists of the type of events that cause the most property and crop damage.
+The results below show that `tornadoes`, `hail`, `floods`, and `wind from thunderstorms` cause the greatest amount of economic damage, with each appearing at the top of the lists of the type of events that cause the most property and crop damage.
 
 ```{r plot-economic damage}
 
@@ -288,9 +288,9 @@ g + geom_bar(color="gray", fill="#003366", stat="identity") +
 
 #### Results of Analysis from Municipal Manager's Perspective
 
-From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. The product of these produce metrics for estimated human harm and estimated economic damage over the next 12 months.
+From the perspective of the municipal manager, the analysis below highlights a prioritization list for the next year based on the average number of events likely to occur in a given year and the average impact of each event in that event category. Their product produces metrics for estimated human harm and estimated economic damage over the next 12 months.
 
-These results show that tornadoes, floods, thunderstorms, and excessive heat are the event categories most likely to cause the greatest human or economic harm in a given year.
+These results show that `tornadoes`, `floods`, `thunderstorms`, and `excessive heat` are the event categories that are most likely to cause the greatest human or economic harm in a given year and ought to be prioritized in the municipal manager's planning efforts.
 
 ```{r plot-ntm analysis}
 
